@@ -1,0 +1,23 @@
+name:                EventStore
+version:             0.1.0.0
+#synopsis:
+#description:
+homepage:            https://github.com/CarstenKoenig/DOS2018/tree/master/Examples/EventStore#readme
+license:             BSD3
+author:              Carsten König
+maintainer:          Carsten@gettingsharper.de
+copyright:           (c) 2016 Carsten König
+extra-source-files:
+- README.md
+
+dependencies:
+  - aeson
+  - base >= 4.7 && < 5
+  - mtl
+  - sqlite-simple
+  - uuid
+
+executables:
+  EventStore:
+    source-dirs:      src
+    main:             Main.hs
