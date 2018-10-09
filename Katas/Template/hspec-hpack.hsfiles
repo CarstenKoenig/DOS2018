@@ -1,0 +1,118 @@
+{-# START_FILE package.yaml #-}
+name:                {{name}}
+version:             0.1.0.0
+#synopsis:
+#description:
+homepage:            https://github.com/{{github-username}}{{^github-username}}githubuser{{/github-username}}/{{name}}#readme
+license:             OtherLicense
+license-file:        LICENSE
+author:              {{author-name}}{{^author-name}}Author name here{{/author-name}}
+maintainer:          {{author-email}}{{^author-email}}example@example.com{{/author-email}}
+category:            {{category}}{{^category}}Web{{/category}}
+extra-source-files:
+- README.md
+
+dependencies:
+  - base >= 4.7 && < 5
+
+library:
+  source-dirs: src
+  dependencies:
+    - mtl
+    - containers
+
+
+executables:
+  {{name}}-exe:
+    source-dirs:      app
+    main:             Main.hs
+    dependencies:
+      - {{name}}
+
+tests:
+  spec:
+    cpp-options: -DTEST
+    main: Spec.hs
+    source-dirs:
+      - tests
+    dependencies:
+      - hspec == 2.*
+      - QuickCheck
+      - {{name}}
+    build-tools: hspec-discover
+
+{-# START_FILE Setup.hs #-}
+import Distribution.Simple
+main = defaultMain
+     
+{-# START_FILE app/Main.hs #-}
+module Main where
+
+import Lib (upperString)
+
+main :: IO ()
+main = do
+  putStrLn $ upperString "hello world"
+
+{-# START_FILE src/Lib.hs #-}
+module Lib
+  ( upperString
+  ) where
+
+import Data.Char (toUpper)
+
+upperString :: String -> String
+upperString = map toUpper
+
+{-# START_FILE tests/Spec.hs #-}
+{-# OPTIONS_GHC -F -pgmF hspec-discover #-}
+
+{-# START_FILE tests/LibSpec.hs #-}
+module LibSpec where
+
+import Test.Hspec
+import Test.QuickCheck
+
+import Lib
+
+main :: IO ()
+main = hspec spec
+
+
+spec :: Spec
+spec = do
+  describe "upperString" $ do
+    it "is turning 'hello' into 'HELLO'" $
+      upperString "hello" `shouldBe` "HELLO"
+    it "keeps string length the same" $ property $
+      \s -> length (upperString s) == length s
+
+
+{-# START_FILE README.md #-}
+# {{name}}
+
+{-# START_FILE LICENSE #-}
+This is free and unencumbered software released into the public domain.
+
+Anyone is free to copy, modify, publish, use, compile, sell, or
+distribute this software, either in source code form or as a compiled
+binary, for any purpose, commercial or non-commercial, and by any
+means.
+
+In jurisdictions that recognize copyright laws, the author or authors
+of this software dedicate any and all copyright interest in the
+software to the public domain. We make this dedication for the benefit
+of the public at large and to the detriment of our heirs and
+successors. We intend this dedication to be an overt act of
+relinquishment in perpetuity of all present and future rights to this
+software under copyright law.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+IN NO EVENT SHALL THE AUTHORS BE LIABLE FOR ANY CLAIM, DAMAGES OR
+OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
+ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+OTHER DEALINGS IN THE SOFTWARE.
+
+For more information, please refer to <http://unlicense.org>
