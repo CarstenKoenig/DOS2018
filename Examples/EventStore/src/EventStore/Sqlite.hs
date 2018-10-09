@@ -3,6 +3,8 @@
 module EventStore.Sqlite
   ( Handle
   , initHandle
+  , aggregateIds
+  , startAggregate
   , insertEvent
   , allEvents
   , foldEvents
@@ -13,7 +15,9 @@ module EventStore.Sqlite
 import           Control.Monad.IO.Class (MonadIO, liftIO)
 import           Data.Aeson (FromJSON, ToJSON)
 import qualified Data.Aeson as Aeson
+import           Data.Maybe (mapMaybe)
 import qualified Data.UUID as UUID
+import qualified Data.UUID.V4 as UUID
 import           Database.SQLite.Simple (Connection, Query, (:.)(..))
 import qualified Database.SQLite.Simple as Sql
 import           EventStore.Event (Event(Event), AggregateId, Number)
@@ -30,6 +34,19 @@ initHandle conStr = do
   where
     initializeDb handle = withHandle handle $ \conn ->
       Sql.execute_ conn "CREATE TABLE IF NOT EXISTS events (id INTEGER PRIMARY KEY, aggregateId TEXT, json TEXT)"
+
+
+aggregateIds :: MonadIO m => Handle -> m [AggregateId]
+aggregateIds handle = withHandle handle $ \ conn -> do
+  aggIds <- Sql.query_ conn "SELECT DISTINCT aggregateId FROM events"
+  return $ mapMaybe (UUID.fromString . Sql.fromOnly) aggIds
+
+
+startAggregate :: MonadIO m => ToJSON ev => Handle -> ev -> m AggregateId
+startAggregate handle event = withHandle handle $ \ conn -> do
+  aId <- UUID.nextRandom
+  Sql.execute conn "INSERT INTO events (aggregateId, json) VALUES (?,?)" (UUID.toString aId, Aeson.encode event)
+  return aId
 
 
 insertEvent :: MonadIO m => ToJSON ev => Handle -> AggregateId -> ev -> m Number
