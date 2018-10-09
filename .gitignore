@@ -23,3 +23,8 @@ cabal.project.local~
 
 ## Emacs
 .dir-locals.el
+
+## no cabals in katas
+Katas/**/*.cabal
+Abend/**/*.cabal
+Slides/output/
