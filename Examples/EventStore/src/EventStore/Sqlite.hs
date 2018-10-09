@@ -59,10 +59,10 @@ allEvents :: MonadIO m => FromJSON ev => Handle -> m [Event ev]
 allEvents handle = reverse <$> foldAllEvents handle (flip (:)) []
 
 
-foldEvents :: MonadIO m => FromJSON ev => Handle -> AggregateId -> (s -> Number -> ev -> s) -> s -> m s
+foldEvents :: MonadIO m => FromJSON ev => Handle -> AggregateId -> (s -> ev -> s) -> s -> m s
 foldEvents handle aId fold s0 = withHandle handle $ \ conn ->
   Sql.fold conn "SELECT * FROM events WHERE aggregateId = ?" (Sql.Only (UUID.toString aId)) s0 foldQuery
-  where foldQuery s (Event nr _ ev) = return $ fold s nr ev
+  where foldQuery s (Event _ _ ev) = return $ fold s ev
 
 
 foldAllEvents :: MonadIO m => FromJSON ev => Handle -> (s -> Event ev -> s) -> s -> m s
