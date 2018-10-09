@@ -1,0 +1,47 @@
+name:                Brainfuck
+version:             0.1.0.0
+#synopsis:
+#description:
+homepage:            https://github.com/CarstenKoenig/Brainfuck#readme
+license:             OtherLicense
+license-file:        LICENSE
+author:              Carsten Koenig
+maintainer:          Carsten.Koenig@hotmail.de
+copyright:           2018 Carsten Koenig
+category:            Web
+extra-source-files:
+- README.md
+
+dependencies:
+  - base >= 4.7 && < 5
+
+ghc-options:
+  - -O
+  - -funbox-strict-fields
+
+library:
+  source-dirs: src
+  dependencies:
+    - mtl
+    - parsec
+    - containers
+
+
+executables:
+  Brainfuck:
+    source-dirs:      app
+    main:             Main.hs
+    dependencies:
+      - Brainfuck
+
+tests:
+  spec:
+    cpp-options: -DTEST
+    main: Spec.hs
+    source-dirs:
+      - tests
+    dependencies:
+      - hspec == 2.*
+      - Brainfuck
+      - mtl
+    build-tools: hspec-discover
