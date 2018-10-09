@@ -5,7 +5,6 @@ module EventStore.Sqlite
   , initHandle
   , insertEvent
   , allEvents
-  , aggregateEvents
   , foldEvents
   , foldAllEvents
   ) where
@@ -17,7 +16,7 @@ import qualified Data.Aeson as Aeson
 import qualified Data.UUID as UUID
 import           Database.SQLite.Simple (Connection, Query, (:.)(..))
 import qualified Database.SQLite.Simple as Sql
-import           EventStore.Event (Event(Event), AggregateId, EventNumber)
+import           EventStore.Event (Event(Event), AggregateId, Number)
 import qualified EventStore.Event as Event
 
 
@@ -33,34 +32,26 @@ initHandle conStr = do
       Sql.execute_ conn "CREATE TABLE IF NOT EXISTS events (id INTEGER PRIMARY KEY, aggregateId TEXT, json TEXT)"
 
 
-insertEvent :: MonadIO m => ToJSON ev => Handle -> AggregateId -> ev -> m EventNumber
+insertEvent :: MonadIO m => ToJSON ev => Handle -> AggregateId -> ev -> m Number
 insertEvent handle aId event = withHandle handle $ \ conn -> do
-  Sql.execute conn "INSERT INTO events (aggregateId, json) VALUES (?,?)" (Event aId event)
+  Sql.execute conn "INSERT INTO events (aggregateId, json) VALUES (?,?)" (UUID.toString aId, Aeson.encode event)
   Sql.lastInsertRowId conn
 
 
-allEvents :: MonadIO m => FromJSON ev => Handle -> m [(EventNumber, Event ev)]
-allEvents handle = withHandle handle $ \ conn -> do
-  res <- Sql.query_ conn "SELECT * FROM events"
-  return $ (\ (nr :. ev) -> (Sql.fromOnly nr, ev)) <$> res
+allEvents :: MonadIO m => FromJSON ev => Handle -> m [Event ev]
+allEvents handle = reverse <$> foldAllEvents handle (flip (:)) []
 
 
-aggregateEvents :: MonadIO m => FromJSON ev => Handle  -> AggregateId -> m [(EventNumber, ev)]
-aggregateEvents handle aId = withHandle handle $ \ conn -> do
-  res <- Sql.query conn "SELECT * FROM events WHERE aggregateId = ?" (Sql.Only (UUID.toString aId))
-  return $ (\ (nr :. Event _ ev) -> (Sql.fromOnly nr, ev)) <$> res
-
-
-foldEvents :: MonadIO m => FromJSON ev => Handle -> AggregateId -> s -> (s -> EventNumber -> ev -> s) -> m s
-foldEvents handle aId s0 fold = withHandle handle $ \ conn ->
+foldEvents :: MonadIO m => FromJSON ev => Handle -> AggregateId -> (s -> Number -> ev -> s) -> s -> m s
+foldEvents handle aId fold s0 = withHandle handle $ \ conn ->
   Sql.fold conn "SELECT * FROM events WHERE aggregateId = ?" (Sql.Only (UUID.toString aId)) s0 foldQuery
-  where foldQuery s (nr :. Event _ ev) = return $ fold s (Sql.fromOnly nr) ev
+  where foldQuery s (Event nr _ ev) = return $ fold s nr ev
 
 
-foldAllEvents :: MonadIO m => FromJSON ev => Handle -> s -> (s -> EventNumber -> Event ev -> s) -> m s
-foldAllEvents handle s0 fold = withHandle handle $ \ conn ->
+foldAllEvents :: MonadIO m => FromJSON ev => Handle -> (s -> Event ev -> s) -> s -> m s
+foldAllEvents handle fold s0 = withHandle handle $ \ conn ->
   Sql.fold_ conn "SELECT * FROM events" s0 foldQuery
-  where foldQuery s (nr :. ev) = return $ fold s (Sql.fromOnly nr) ev
+  where foldQuery s ev = return $ fold s ev
 
 
 withHandle :: MonadIO m => Handle -> (Connection ->  IO a) -> m a
@@ -68,11 +59,7 @@ withHandle (Handle conStr) action = liftIO $ Sql.withConnection conStr action
 
 
 instance FromJSON a => Sql.FromRow (Event a) where
-  fromRow = Event <$> uuidField <*> jsonField
+  fromRow = Event <$> Sql.field <*> uuidField <*> jsonField
     where
       uuidField = Sql.field >>= maybe (fail "could not parse UUID") return . UUID.fromString
       jsonField = Sql.field >>= maybe (fail "cound not decode JSON") return . Aeson.decode
-
-
-instance ToJSON a => Sql.ToRow (Event a) where
-  toRow (Event aId value) = Sql.toRow (UUID.toString aId, Aeson.encode value)
