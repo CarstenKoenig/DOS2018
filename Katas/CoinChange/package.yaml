@@ -1,0 +1,33 @@
+name:                CoinChange
+version:             0.1.0.0
+#synopsis:
+#description:
+homepage:            https://github.com/CarstenKoenig/DOS2018/tree/master/Katas/CoinChange#readme
+license:             OtherLicense
+license-file:        LICENSE
+author:              Carsten König
+maintainer:          Carsten@gettingsharper.de
+extra-source-files:
+- README.md
+
+dependencies:
+  - base >= 4.7 && < 5
+
+library:
+  source-dirs: src
+  dependencies:
+    - mtl
+    - containers
+
+
+tests:
+  spec:
+    cpp-options: -DTEST
+    main: Spec.hs
+    source-dirs:
+      - tests
+    dependencies:
+      - hspec == 2.*
+      - QuickCheck
+      - CoinChange
+    build-tools: hspec-discover
