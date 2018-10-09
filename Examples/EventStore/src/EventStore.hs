@@ -1,5 +1,6 @@
 module EventStore
   ( Handle
+  , module EventStore.Event
   , Sql.initHandle
   , Sql.aggregateIds
   , Sql.startAggregate
