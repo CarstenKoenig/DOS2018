@@ -1,8 +1,8 @@
-name:                EventStore
+name:                Konto
 version:             0.1.0.0
 #synopsis:
 #description:
-homepage:            https://github.com/CarstenKoenig/DOS2018/tree/master/Examples/EventStore#readme
+homepage:            https://github.com/CarstenKoenig/DOS2018/tree/master/Examples/Konto#readme
 license:             BSD3
 author:              Carsten König
 maintainer:          Carsten@gettingsharper.de
@@ -13,9 +13,11 @@ extra-source-files:
 dependencies:
   - aeson
   - base >= 4.7 && < 5
-  - mtl
-  - sqlite-simple
-  - uuid
+  - Decimal
+  - optparse-applicative
+  - EventStore
 
-library:
+executables:
+  Konto:
     source-dirs:      src
+    main:             Main.hs
