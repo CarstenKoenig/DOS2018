@@ -7,28 +7,21 @@ module Interval
   ) where
 
 
-data Interval a
-  = Interval a a
-  | Empty
-  deriving (Eq, Show)
+data Interval a = Interval
+  deriving (Show, Eq)
 
 
 interval :: Ord a => a -> a -> Interval a
-interval a b
-  | a <= b = Interval a b
-  | otherwise = empty
+interval = undefined
 
 
 empty :: Interval a
-empty = Empty
+empty = undefined
 
 
 length :: Num a => Interval a -> a
-length (Interval a b) = b - a
-length Empty = 0
+length = undefined
 
 
 intersect :: Ord a => Interval a -> Interval a -> Interval a
-intersect Empty _                         = Empty
-intersect _ Empty                         = Empty
-intersect (Interval a b) (Interval a' b') = interval (max a a') (min b b')
+intersect = undefined
