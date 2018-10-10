@@ -6,7 +6,7 @@ author:
 - Developer Open Space 2018
 
 theme:
-- copenhagen
+- Copenhagen
 ---
 
 # Kata's
