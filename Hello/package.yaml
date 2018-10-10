@@ -1,0 +1,22 @@
+name:                Hello
+version:             0.1.0.0
+license:             BSD3
+author:              "Carsten König"
+maintainer:          "Carsten@gettingsharper.de"
+
+dependencies:
+- Decimal
+- QuickCheck
+- aeson
+- base >= 4.7 && < 5
+- containers
+- hspec == 2.*
+- mtl
+- optparse-applicative
+- sqlite-simple
+- uuid
+
+executables:
+  Hello:
+    main:                Main.hs
+    source-dirs:         app
