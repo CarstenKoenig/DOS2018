@@ -17,13 +17,34 @@ type BrainfuckM = StateT (Tape Word8) IO
 
 
 brainfuck :: FilePath -> IO ()
-brainfuck file = undefined
+brainfuck file = do
+  insts <- parseFile file
+  evalStateT (interpretInstructions insts) empty
 
 
 interpretInstructions :: [Instruction] -> BrainfuckM ()
-interpretInstructions = undefined
+interpretInstructions = mapM_ interpretInstruction
+
+
+interpretInstruction :: Instruction -> BrainfuckM ()
+interpretInstruction TapeRight  = moveRight
+interpretInstruction TapeLeft   = moveLeft
+interpretInstruction Increment  = increase
+interpretInstruction Decrement  = decrease
+interpretInstruction GetChar    = input >>= setValue
+interpretInstruction PutChar    = currentValue >>= output
+interpretInstruction (Loop ins) = loop
+  where loop = do
+          val <- currentValue
+          if val /= 0
+            then interpretInstructions ins >> loop
+            else return ()
 
 
 parseFile :: FilePath -> IO [Instruction]
-parseFile file = undefined
+parseFile file = do
+  content <- readFile file
+  case parseBf content of
+    Left  err   -> fail err
+    Right insts -> return insts
 
