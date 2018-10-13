@@ -8,7 +8,7 @@ module Brainfuck
 
 import Brainfuck.Ast
 import Brainfuck.IO
-import Brainfuck.SimpleParser
+import Brainfuck.Parser
 import Brainfuck.MapTape
 import Data.Word (Word8)
 import Control.Monad.State
