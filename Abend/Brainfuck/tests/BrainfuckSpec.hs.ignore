@@ -27,15 +27,15 @@ spec = do
       parseCommand "[-]" `shouldBe` Right (Loop [Decrement])
   describe "parsing instructions" $
     it "'>+<' is parsed as [TapeRight, Increment, TapeLeft]" $
-      parseInstructions ">[-]<" `shouldBe` Right [TapeRight, Loop [ Decrement ], TapeLeft]
+      parseInstructions ">[-]<" `shouldBe` Just [TapeRight, Loop [ Decrement ], TapeLeft]
 
 
 parseCommand :: String -> Either String Instruction
-parseCommand = safeHead . parseBf
-  where safeHead (Left err)    = Left err
-        safeHead (Right [])    = Left "did not parse any instructions"
-        safeHead (Right (h:_)) = Right h
+parseCommand = safeHead . parseInstructions
+  where safeHead Nothing      = Left "parse error"
+        safeHead (Just [])    = Left "did not parse any instructions"
+        safeHead (Just (h:_)) = Right h
 
-parseInstructions :: String -> Either String [Instruction]
+parseInstructions :: String -> Maybe [Instruction]
 parseInstructions = parseBf
 
